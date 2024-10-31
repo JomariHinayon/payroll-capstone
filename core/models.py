@@ -49,7 +49,7 @@ class Employee(models.Model):
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return f"{self.user.first_name} {self.user.last_name}"
     
 class Attendance(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name="attendances")
@@ -63,29 +63,17 @@ class Attendance(models.Model):
     def __str__(self):
         return f"Attendance for {self.employee} on {self.date}"
 
-class SalaryStructure(models.Model):
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name="salary_structures")
-    base_salary = models.DecimalField(max_digits=10, decimal_places=2)
-    bonus = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    deductions = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    allowances = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    effective_date = models.DateField()
-
-    def __str__(self):
-        return f"Salary Structure for {self.employee}"
-
 class Payroll(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name="payrolls")
     start_date = models.DateField()
     end_date = models.DateField()
-    salary_structure = models.ForeignKey(SalaryStructure, on_delete=models.CASCADE, related_name="payrolls")
     allowances = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     deductions = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     bonuses = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     net_salary = models.DecimalField(max_digits=10, decimal_places=2)
 
     def calculate_net_salary(self):
-        self.net_salary = self.base_salary + self.allowances + self.bonuses - self.deductions
+        self.net_salary = self.employee.salary + self.allowances + self.bonuses - self.deductions
         return self.net_salary
 
     def __str__(self):

@@ -21,7 +21,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
         model = Attendance
         fields = [
             'id', 'employee', 'date', 'time_in', 'time_out', 
-            'is_present', 'fingerprint_data', 'picture'
+            'is_present', 'fingerprint_data'
         ]
         read_only_fields = ['id']
 
@@ -30,9 +30,7 @@ class PayrollSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payroll
         fields = [
-            'id', 'employee', 'start_date', 'end_date', 'salary_structure', 
-            'allowances', 'deductions', 'bonuses', 'net_salary'
-        ]
+            'id', 'employee', 'start_date', 'end_date', 'deductions', 'allowances', 'bonuses']
         read_only_fields = ['id', 'net_salary']
     
     def create(self, validated_data):

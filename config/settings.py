@@ -148,12 +148,11 @@ AUTH_USER_MODEL='core.Account'
 
 # SWAGGER
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'Payroll Managemenet System API',
+    'TITLE': 'Payroll Management System API',
     'DESCRIPTION': 'Your project description',
     'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,
+    'SERVE_INCLUDE_SCHEMA': True,
 }
-
 
 # Media files (uploads)
 MEDIA_URL = '/media/'

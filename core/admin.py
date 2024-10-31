@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Account, Employee, Attendance, Payroll
+from .models import Account, Employee, Attendance, Payroll, Department, Position
 
 class AccountAdmin(admin.ModelAdmin):
     list_display = ('username', 'email', 'mobile_number', 'contact_number', 'is_active', 'is_staff')
@@ -23,7 +23,16 @@ class PayrollAdmin(admin.ModelAdmin):
     list_filter = ('start_date', 'end_date', 'employee')
     search_fields = ('employee__id_number', 'employee__email')
 
+class DepartmentAdmin(admin.ModelAdmin):
+    list_display = ('name', 'description')
+
+class PositionAdmin(admin.ModelAdmin):
+    list_display = ('title', 'department', 'description')
+
+
 admin.site.register(Account, AccountAdmin)
 admin.site.register(Employee, EmployeeAdmin)
 admin.site.register(Attendance, AttendanceAdmin)
 admin.site.register(Payroll, PayrollAdmin)
+admin.site.register(Department, DepartmentAdmin)
+admin.site.register(Position, PositionAdmin)
