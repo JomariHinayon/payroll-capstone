@@ -1,12 +1,39 @@
 from rest_framework import serializers
-from core.models import Account, Employee, Attendance, Payroll
+from core.models import Account, Employee, Attendance, Payroll, Department, Position
 
 class AccountSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+    employee_number = serializers.CharField(required=False, allow_null=True)
 
     class Meta:
         model = Account
-        fields = ('username', 'email', 'password')
+        fields = ('username', 'password', 'first_name', 'last_name', 'employee_number')
+
+    def create(self, validated_data):
+        password = validated_data.pop('password')
+        employee_number = validated_data.pop('employee_number', None)
+
+        # Create the Account
+        account, created = Account.objects.get_or_create(**validated_data)
+
+        # If employee_number is provided, link to existing Employee or create a new one
+        if employee_number:
+            # Check if the employee already exists
+            try:
+                employee = Employee.objects.get(id_number=employee_number)
+                employee.user = account
+                employee.save()
+            except Employee.DoesNotExist:
+                # Create a new Employee if employee_number is not provided
+                    employee = Employee.objects.create(
+                        user=account,
+                        id_number=employee_number,
+                        gender="M", 
+                        is_active=False
+                    )
+                    employee.save()
+
+        return account
 
 class EmployeeSerializer(serializers.ModelSerializer):
     class Meta:
