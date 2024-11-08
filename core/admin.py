@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.utils.html import format_html
+
 from .models import Account, Employee, Attendance, Payroll, Department, Position
 
 class AccountAdmin(admin.ModelAdmin):
@@ -8,10 +10,28 @@ class AccountAdmin(admin.ModelAdmin):
 
 
 class EmployeeAdmin(admin.ModelAdmin):
-    list_display = ('id_number', 'gender', 'birth_date', 'hire_date', 'department', 'position', 'is_active')
+    list_display = ('id_number', 'gender', 'birth_date', 'hire_date', 'department', 'position', 'is_active', 'display_image', 'display_fingerprint')
     list_filter = ('department', 'position', 'is_active')
     search_fields = ('id_number', 'phone_number', 'tel_number')
     ordering = ('id_number',)
+
+    def display_image(self, obj):
+        if obj.profile_image:
+            return format_html('<img src="{}" style="width: 50px; height: 50px;" />', obj.profile_image.url)
+        return "No Image"
+
+    display_image.short_description = "Profile Image"
+
+    # Method to provide a download link for the .dat fingerprint file
+    def display_fingerprint(self, obj):
+        if obj.fingerprint_file and obj.fingerprint_file.name.endswith('.dat'):
+            return format_html('<a href="{}" download>Download Fingerprint</a>', obj.fingerprint_file.url)
+        return "No Fingerprint File"
+
+    display_fingerprint.short_description = "Fingerprint File"
+
+    readonly_fields = ('display_image', 'display_fingerprint')
+
 
 class AttendanceAdmin(admin.ModelAdmin):
     list_display = ('employee', 'date', 'time_in', 'time_out', 'is_present')

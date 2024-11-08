@@ -1,14 +1,31 @@
 from django.db import models
+from datetime import time
 
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from config import settings
 from django.utils import timezone
 
-
 class Account(AbstractUser):
     mobile_number = models.CharField(max_length=15, blank=True, null=True)
     contact_number = models.CharField(max_length=15, blank=True, null=True)
+
+    def __init__(self, *args, **kwargs):
+        super(Account, self).__init__(*args, **kwargs)
+        self.save_original_password()
+
+    # Track the original password
+    def save_original_password(self):
+        self.original_password = self.password
+        
+    def save(self, *args, **kwargs):
+        # Check if the password has been changed
+        if self.password and hasattr(self, 'original_password') and self.password != self.original_password:
+            # Hash the password
+            self.set_password(self.password)
+        
+        # Call the parent save method
+        super(Account, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.username
@@ -22,7 +39,7 @@ class Department(models.Model):
 
 class Position(models.Model):
     title = models.CharField(max_length=100)
-    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name="positions")
+    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name="positions", null=True, blank=True)
     description = models.TextField(blank=True, null=True)
 
     def __str__(self):
@@ -47,6 +64,12 @@ class Employee(models.Model):
     tel_number = models.CharField(max_length=50, blank=True, null=True)
     salary = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     is_active = models.BooleanField(default=True)
+    fingerprint_file = models.FileField(upload_to='fingerprints/', blank=True, null=True)
+    profile_image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
+    sss_number = models.CharField(max_length=255, blank=False, null=False, default="")
+    time_in = models.TimeField(default=time(9, 0))     
+    time_out = models.TimeField(default=time(19, 0))     
+    
 
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name}"
@@ -75,6 +98,10 @@ class Payroll(models.Model):
     def calculate_net_salary(self):
         self.net_salary = self.employee.salary + self.allowances + self.bonuses - self.deductions
         return self.net_salary
+    
+    @property
+    def month(self):
+        return self.start_date.strftime("%B %Y")  
 
     def __str__(self):
         return f"Payroll for {self.employee} from {self.start_date} to {self.end_date}"

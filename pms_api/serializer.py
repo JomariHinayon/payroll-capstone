@@ -95,17 +95,38 @@ class PositionSerializer(serializers.ModelSerializer):
         fields = ['title']
 
 class EmployeeSerializer(serializers.ModelSerializer):
-    full_name = serializers.SerializerMethodField()  
-    department = DepartmentSerializer(read_only=True)
-    position = PositionSerializer(read_only=True)
+    user = AccountSerializer()
+    full_name = serializers.SerializerMethodField()
+    position = PositionSerializer()
+    department = DepartmentSerializer()
 
     class Meta:
         model = Employee
-        fields = [
-            'id', 'id_number', 'user', 'gender', 'birth_date', 'hire_date', 
-            'address', 'department', 'position', 'phone_number', 
-            'tel_number', 'salary', 'is_active', 'full_name'  # Include full_name in fields
-        ]
+        fields = "__all__"
+
+    def create(self, validated_data):
+        # Extract user data from the validated data
+        user_data = validated_data.pop('user')
+        # Create the user
+        user = Account.objects.create_user(**user_data)
+        department = None
+        position = None
+        department_name = validated_data.pop('department', None)
+        if department_name:
+            department_name = department_name['name']  
+            department, created = Department.objects.get_or_create(name=department_name)
+        else:
+            department = None  
+
+        position_title = validated_data.pop('position', None)
+        if position_title:
+            position_title = position_title['title'] 
+            position, created = Position.objects.get_or_create(title=position_title)
+        else:
+            position = None
+        employee = Employee.objects.create(user=user, department=department, position=position, **validated_data)
+
+        return employee
 
     def get_full_name(self, obj):
         # Combine first_name and last_name
@@ -124,11 +145,13 @@ class AttendanceSerializer(serializers.ModelSerializer):
 
 
 class PayrollSerializer(serializers.ModelSerializer):
+    employee = EmployeeSerializer()
+
     class Meta:
         model = Payroll
         fields = [
-            'id', 'employee', 'start_date', 'end_date', 'deductions', 'allowances', 'bonuses']
-        read_only_fields = ['id', 'net_salary']
+            'id', 'employee', 'start_date', 'end_date', 'deductions', 'allowances', 'bonuses', 'net_salary']
+        read_only_fields = ['id']
     
     def create(self, validated_data):
         payroll = Payroll(**validated_data)
