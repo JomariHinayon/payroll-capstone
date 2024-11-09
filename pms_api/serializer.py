@@ -143,7 +143,6 @@ class AttendanceSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id']
 
-
 class PayrollSerializer(serializers.ModelSerializer):
     employee = EmployeeSerializer()
 

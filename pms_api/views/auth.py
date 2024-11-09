@@ -44,7 +44,7 @@ class EmployeeLoginView(APIView):
     def post(self, request):
         employee_number = request.data.get('employee_number')
         password = request.data.get('password')
-
+        employee = None
         try:
             # Fetch the employee by employee number
             employee = Employee.objects.get(id_number=employee_number)
@@ -57,12 +57,17 @@ class EmployeeLoginView(APIView):
         
         # Authenticate the user
         user = authenticate(username=account.username, password=password)
-        if user is not None:
+        if user is not None and employee is not None:
             # Generate or retrieve the authentication token
             token, created = Token.objects.get_or_create(user=user)
             return Response({
                 'message': 'Login successful',
-                'token': token.key
+                'token': token.key,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'time_in': employee.time_in,
+                'time_out': employee.time_out,
+                'username': user.username
             }, status=status.HTTP_200_OK)
         else:
             return Response({
