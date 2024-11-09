@@ -54,7 +54,7 @@ class EmployeeLoginView(APIView):
             return Response({
                 'error': 'Employee number does not exist'
             }, status=status.HTTP_401_UNAUTHORIZED)
-
+        
         # Authenticate the user
         user = authenticate(username=account.username, password=password)
         if user is not None:
