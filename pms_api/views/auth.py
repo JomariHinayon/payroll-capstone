@@ -67,7 +67,8 @@ class EmployeeLoginView(APIView):
                 'last_name': user.last_name,
                 'time_in': employee.time_in,
                 'time_out': employee.time_out,
-                'username': user.username
+                'username': user.username,
+                'employee_number': employee.id_number ,
             }, status=status.HTTP_200_OK)
         else:
             return Response({
