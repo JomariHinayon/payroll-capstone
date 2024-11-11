@@ -10,13 +10,13 @@ class Account(AbstractUser):
     mobile_number = models.CharField(max_length=15, blank=True, null=True)
     contact_number = models.CharField(max_length=15, blank=True, null=True)
 
-    def save(self, *args, **kwargs):
-        # Hash the password if it is not already hashed
-        if self.pk is None or not self.password.startswith("pbkdf2_sha256$"):
-            self.set_password(self.password)
+    # def save(self, *args, **kwargs):
+    #     # Hash the password if it is not already hashed
+    #     if self.pk is None or not self.password.startswith("pbkdf2_sha256$"):
+    #         self.set_password(self.password)
 
-        # Call the parent save method
-        super(Account, self).save(*args, **kwargs)
+    #     # Call the parent save method
+    #     super(Account, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.username
