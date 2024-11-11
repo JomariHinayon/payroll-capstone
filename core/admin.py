@@ -10,7 +10,7 @@ class AccountAdmin(admin.ModelAdmin):
 
 
 class EmployeeAdmin(admin.ModelAdmin):
-    list_display = ('id_number', 'gender', 'birth_date', 'hire_date', 'department', 'position', 'is_active', 'display_image', 'display_fingerprint')
+    list_display = ('id_number', 'user', 'gender', 'birth_date', 'hire_date', 'department', 'position', 'is_active', 'display_image', 'display_fingerprint')
     list_filter = ('department', 'position', 'is_active')
     search_fields = ('id_number', 'phone_number', 'tel_number')
     ordering = ('id_number',)

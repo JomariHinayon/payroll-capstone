@@ -24,8 +24,6 @@ class AccountRegistrationView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)  
         
         user = serializer.save()
-        user.set_password(request.data['password'])  
-        user.save() 
 
         token, created = Token.objects.get_or_create(user=user)
 

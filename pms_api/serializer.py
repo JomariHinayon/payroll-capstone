@@ -53,7 +53,6 @@ class AccountRegisterSerializer(serializers.ModelSerializer):
         fields = ('username', 'password', 'first_name', 'last_name', 'employee_number')
 
     def create(self, validated_data):
-        password = validated_data.pop('password')
         employee_number = validated_data.pop('employee_number', None)
 
         # Create the Account
@@ -82,7 +81,7 @@ class AccountRegisterSerializer(serializers.ModelSerializer):
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        fields = ('username', 'first_name', 'last_name')
+        fields = ('username', 'first_name', 'last_name', 'password')
 
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -109,6 +108,9 @@ class EmployeeSerializer(serializers.ModelSerializer):
         user_data = validated_data.pop('user')
         # Create the user
         user = Account.objects.create_user(**user_data)
+        user.password = user_data['password']
+        user.save()
+        
         department = None
         position = None
         department_name = validated_data.pop('department', None)
