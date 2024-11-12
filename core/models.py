@@ -71,7 +71,7 @@ class Attendance(models.Model):
     time_in = models.TimeField(blank=True, null=True)
     time_out = models.TimeField(blank=True, null=True)
     is_present = models.BooleanField(default=True)
-    fingerprint_data = models.BinaryField(blank=True, null=True)  
+    fingerprint_file = models.FileField(upload_to='attendance_fingerprints/', blank=True, null=True)  # Store the fingerprint file
     picture = models.ImageField(upload_to='attendance_pictures/', blank=True, null=True) 
 
     def __str__(self):

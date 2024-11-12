@@ -140,10 +140,13 @@ class AttendanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attendance
         fields = [
-            'id', 'employee', 'date', 'time_in', 'time_out', 
-            'is_present', 'fingerprint_data'
+            'id', 'employee', 'date', 'time_in', 'time_out', 'is_present', 'fingerprint_data', 'picture'
         ]
         read_only_fields = ['id']
+
+    def create(self, validated_data):
+        # Custom logic to handle fingerprint
+        return super().create(validated_data)
 
 class PayrollSerializer(serializers.ModelSerializer):
     employee = EmployeeSerializer()
