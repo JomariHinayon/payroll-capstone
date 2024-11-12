@@ -28,53 +28,43 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         json_data_str = dict_data.get('json_data', '{}')
         json_data = json.loads(json_data_str)
 
-        fingerprint_file = request.FILES.get("fingerprint_file")
-        if fingerprint_file:
-            fingerprint_data = fingerprint_file.read()
-            input_fingerprint_hash = generate_fingerprint_hash(fingerprint_data)
-        else:
-            return Response({"detail": "Fingerprint file is required."}, status=status.HTTP_400_BAD_REQUEST)
-
+        username = json_data.get('username')
         date = json_data.get('date')
         time_in = json_data.get('time_in')
         time_out = json_data.get('time_out')
+        employee_fingerprint = None
 
         try:
-            # Step 1: Find the employee by comparing fingerprint hashes
-            matching_employee = None
-            for employee in Employee.objects.all():
-                if employee.fingerprint_file:
-                    with open(employee.fingerprint_file.path, 'rb') as f:
-                        employee_fingerprint = f.read()
-                        employee_fingerprint_hash = generate_fingerprint_hash(employee_fingerprint)
+            # Use `user__username` to look up the Employee based on the User model's username field
+            employee = Employee.objects.get(user__username=username)
 
-                    # Compare hashes instead of raw binary data
-                    print(employee.user.username)
-                    print(input_fingerprint_hash)
-                    print("===")
-                    print(employee_fingerprint_hash)
-                    print("================================")
-                    if input_fingerprint_hash == employee_fingerprint_hash:
-                        matching_employee = employee
-                        break
+            # Check if an attendance record for the same employee already exists for the current day
+            existing_attendance = Attendance.objects.filter(employee=employee, date=date).first()
 
-            if not matching_employee:
-                return Response({"detail": "Fingerprint not recognized."}, status=status.HTTP_400_BAD_REQUEST)
+            if existing_attendance:
+                # If an attendance record already exists for this employee on the given date
+                error_message = f"Attendance for employee '{username}' on {date} already exists."
+                logger.warning(error_message)
+                return Response({"detail": error_message}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Step 2: Create attendance record for matched employee
+            # Create attendance record for matched employee
             attendance = Attendance.objects.create(
-                employee=matching_employee,
+                employee=employee,
                 date=date,
                 time_in=parse_time(time_in),
                 time_out=parse_time(time_out),
                 is_present=True,
-                fingerprint_file=fingerprint_file  # Store the fingerprint file
+                fingerprint_file=employee_fingerprint  # Store the fingerprint file
             )
 
-            # Step 3: Serialize and respond
+            # Serialize and respond
             serializer = AttendanceSerializer(attendance)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+        except Employee.DoesNotExist:
+            error_message = f"Employee with username '{username}' does not exist."
+            logger.error(error_message)
+            return Response({"detail": error_message}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             logger.error(f"Exception during attendance creation: {str(e)}")
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
