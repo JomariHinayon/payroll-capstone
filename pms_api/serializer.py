@@ -165,7 +165,7 @@ class PayrollSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payroll
         fields = [
-            'id', 'employee', 'start_date', 'end_date', 'deductions', 'allowances', 'bonuses', 'net_salary']
+            'id', 'employee', 'start_date', 'end_date', 'deductions', 'allowances', 'bonuses', 'net_salary', 'is_read']
         read_only_fields = ['id']
     
     def create(self, validated_data):

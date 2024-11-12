@@ -86,6 +86,7 @@ class Payroll(models.Model):
     deductions = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     bonuses = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     net_salary = models.DecimalField(max_digits=10, decimal_places=2)
+    is_read = models.BooleanField(default=False)
 
     def calculate_salary(self):
             # Calculate total hours worked based on attendance records for the period
