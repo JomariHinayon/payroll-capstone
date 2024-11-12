@@ -1,7 +1,11 @@
 from django.contrib import admin
 from django.utils.html import format_html
+from django.http import HttpResponse, HttpResponseRedirect
+from datetime import timedelta
+
 
 from .models import Account, Employee, Attendance, Payroll, Department, Position
+
 
 class AccountAdmin(admin.ModelAdmin):
     list_display = ('username', 'email', 'mobile_number', 'contact_number', 'is_active', 'is_staff')
@@ -10,7 +14,7 @@ class AccountAdmin(admin.ModelAdmin):
 
 
 class EmployeeAdmin(admin.ModelAdmin):
-    list_display = ('id_number', 'user', 'gender', 'birth_date', 'hire_date', 'department', 'position', 'is_active', 'display_image', 'display_fingerprint')
+    list_display = ('id_number', 'user', 'gender', 'birth_date', 'hire_date', 'department', 'position', 'is_active', 'display_image', 'display_fingerprint', 'calculate_salary_button')
     list_filter = ('department', 'position', 'is_active')
     search_fields = ('id_number', 'phone_number', 'tel_number')
     ordering = ('id_number',)
@@ -22,7 +26,6 @@ class EmployeeAdmin(admin.ModelAdmin):
 
     display_image.short_description = "Profile Image"
 
-    # Method to provide a download link for the .dat fingerprint file
     def display_fingerprint(self, obj):
         if obj.fingerprint_file and obj.fingerprint_file.name.endswith('.dat'):
             return format_html('<a href="{}" download>Download Fingerprint</a>', obj.fingerprint_file.url)
@@ -32,6 +35,16 @@ class EmployeeAdmin(admin.ModelAdmin):
 
     readonly_fields = ('display_image', 'display_fingerprint')
 
+    # Add a custom button to calculate salary
+    def calculate_salary_button(self, obj):
+        return format_html(
+            '<a class="button" href="/calculate_salary/{}/">Calculate Salary</a>', obj.id
+        )
+
+    calculate_salary_button.short_description = "Salary Action"
+
+    # Register the action in the admin interface
+    actions = ['calculate_salary']
 
 class AttendanceAdmin(admin.ModelAdmin):
     list_display = ('employee', 'date', 'time_in', 'time_out', 'is_present')

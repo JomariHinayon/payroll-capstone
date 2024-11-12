@@ -5,6 +5,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from config import settings
 from django.utils import timezone
+from datetime import datetime, timedelta
 
 class Account(AbstractUser):
     mobile_number = models.CharField(max_length=15, blank=True, null=True)
@@ -86,13 +87,41 @@ class Payroll(models.Model):
     bonuses = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     net_salary = models.DecimalField(max_digits=10, decimal_places=2)
 
-    def calculate_net_salary(self):
-        self.net_salary = self.employee.salary + self.allowances + self.bonuses - self.deductions
-        return self.net_salary
-    
+    def calculate_salary(self):
+            # Calculate total hours worked based on attendance records for the period
+            attendance_records = Attendance.objects.filter(employee=self.employee, date__range=[self.start_date, self.end_date])
+            total_hours = timedelta()
+
+            for attendance in attendance_records:
+                if attendance.time_in and attendance.time_out:
+                    # Use a reference date to convert time to datetime
+                    reference_date = self.start_date
+                    
+                    # Combine the time with a reference date
+                    time_in = datetime.combine(reference_date, attendance.time_in)
+                    time_out = datetime.combine(reference_date, attendance.time_out)
+
+                    # If the time_out is before time_in, it means the time is on the next day
+                    if time_out < time_in:
+                        time_out += timedelta(days=1)
+
+                    # Calculate the difference
+                    total_hours += (time_out - time_in)
+
+            # Hourly rate (can be customized based on employee or position)
+            hourly_rate = self.employee.hourly_rate if hasattr(self.employee, 'hourly_rate') else 20  
+            total_salary = total_hours.total_seconds() / 3600 * hourly_rate
+
+            # Add allowances, bonuses, and subtract deductions
+            self.net_salary = total_salary + self.allowances + self.bonuses - self.deductions
+            self.save()
+
+            return self.net_salary
+
     @property
     def month(self):
-        return self.start_date.strftime("%B %Y")  
+        return self.start_date.strftime("%B %Y")
 
     def __str__(self):
         return f"Payroll for {self.employee} from {self.start_date} to {self.end_date}"
+
