@@ -136,17 +136,28 @@ class EmployeeSerializer(serializers.ModelSerializer):
     
 class AttendanceSerializer(serializers.ModelSerializer):
     employee = EmployeeSerializer(read_only=True)
+    username = serializers.CharField(required=True, write_only=True)  # Accept username as input, but it's write-only
+
     
     class Meta:
         model = Attendance
         fields = [
-            'id', 'employee', 'date', 'time_in', 'time_out', 'is_present', 'fingerprint_file', 'picture'
+            'id', 'username', 'employee', 'date', 'time_in', 'time_out', 'is_present', 'fingerprint_file', 'picture'
         ]
         read_only_fields = ['id']
 
     def create(self, validated_data):
-        # Custom logic to handle fingerprint
-        return super().create(validated_data)
+        username = validated_data.pop('username')
+        
+        # Retrieve the Employee instance based on the username
+        try:
+            employee = Employee.objects.get(user__username=username)
+        except Employee.DoesNotExist:
+            raise serializers.ValidationError(f"Employee with username '{username}' does not exist.")
+        
+        # Attach employee to attendance and create the record
+        attendance = Attendance.objects.create(employee=employee, **validated_data)
+        return attendance
 
 class PayrollSerializer(serializers.ModelSerializer):
     employee = EmployeeSerializer()
@@ -154,7 +165,7 @@ class PayrollSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payroll
         fields = [
-            'id', 'employee', 'start_date', 'end_date', 'deductions', 'allowances', 'bonuses', 'net_salary']
+            'id', 'employee', 'start_date', 'end_date', 'deductions', 'allowances', 'bonuses', 'net_salary', 'is_read']
         read_only_fields = ['id']
     
     def create(self, validated_data):
