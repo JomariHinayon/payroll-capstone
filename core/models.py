@@ -6,6 +6,7 @@ from django.contrib.auth.models import AbstractUser
 from config import settings
 from django.utils import timezone
 from datetime import datetime, timedelta
+from decimal import Decimal
 
 class Account(AbstractUser):
     mobile_number = models.CharField(max_length=15, blank=True, null=True)
@@ -137,7 +138,7 @@ class Payroll(models.Model):
     allowances = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     deductions = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     bonuses = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    net_salary = models.DecimalField(max_digits=10, decimal_places=2)
+    net_salary = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     is_read = models.BooleanField(default=False)
 
     def calculate_salary(self):
@@ -162,8 +163,8 @@ class Payroll(models.Model):
                     total_hours += (time_out - time_in)
 
             # Hourly rate (can be customized based on employee or position)
-            hourly_rate = self.employee.hourly_rate if hasattr(self.employee, 'hourly_rate') else 20  
-            total_salary = total_hours.total_seconds() / 3600 * hourly_rate
+            hourly_rate = Decimal(self.employee.hourly_rate) if hasattr(self.employee, 'hourly_rate') else 20  
+            total_salary = Decimal(total_hours.total_seconds()) / Decimal(3600) * hourly_rate
 
             # Add allowances, bonuses, and subtract deductions
             self.net_salary = total_salary + self.allowances + self.bonuses - self.deductions

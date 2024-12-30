@@ -175,13 +175,13 @@ class PayrollSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         payroll = Payroll(**validated_data)
-        payroll.calculate_net_salary()  # Calculate net salary before saving
+        payroll.calculate_salary()  # Calculate net salary before saving
         payroll.save()
         return payroll
 
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-        instance.calculate_net_salary()  # Recalculate net salary before saving
+        instance.calculate_salary()  # Recalculate net salary before saving
         instance.save()
         return instance
