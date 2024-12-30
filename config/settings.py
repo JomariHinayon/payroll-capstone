@@ -153,6 +153,15 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = "static/"
+if DEBUG:
+    STATIC_ROOT = "static/"
+    STATICFILES_DIRS = [os.path.join(BASE_DIR, "staticfiles")]
+else:
+    STATIC_ROOT = os.path.join("/var/www/payroll/", "staticfiles")
+    STATICFILES_DIRS = ["/var/www/payroll/"]
+
 AUTH_USER_MODEL='core.Account'
 
 # SWAGGER

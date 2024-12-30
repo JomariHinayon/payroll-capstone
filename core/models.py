@@ -1,6 +1,6 @@
 from django.db import models
 from datetime import time
-
+from decimal import Decimal
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from config import settings
@@ -28,6 +28,14 @@ class Department(models.Model):
 
     def __str__(self):
         return self.name
+
+class Announcement(models.Model):
+    title = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+    announcement_image = models.ImageField(upload_to='announcement_image/', blank=True, null=True)
+
+    def __str__(self):
+        return self.title
 
 class Position(models.Model):
     title = models.CharField(max_length=100)
@@ -60,8 +68,23 @@ class Employee(models.Model):
     profile_image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
     sss_number = models.CharField(max_length=255, blank=False, null=False, default="")
     time_in = models.TimeField(default=time(9, 0))     
-    time_out = models.TimeField(default=time(19, 0))     
+    time_out = models.TimeField(default=time(19, 0))
+    daily_wage = models.DecimalField(max_digits=10, decimal_places=2, default=500.00)
     
+    def calculate_daily_wage(self):
+        """
+        Calculate and return the daily wage based on the salary.
+        Assuming 22 working days in a month.
+        """
+        working_days_per_month = 22  # Standard working days in a month
+        if self.salary > 0:
+            return self.salary / working_days_per_month
+        return 0.00
+
+    def save(self, *args, **kwargs):
+        # Automatically calculate and update daily_wage before saving
+        self.daily_wage = self.calculate_daily_wage()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name}"
@@ -73,10 +96,39 @@ class Attendance(models.Model):
     time_out = models.TimeField(blank=True, null=True)
     is_present = models.BooleanField(default=True)
     fingerprint_file = models.FileField(upload_to='attendance_fingerprints/', blank=True, null=True)  # Store the fingerprint file
-    picture = models.ImageField(upload_to='attendance_pictures/', blank=True, null=True) 
+    picture = models.ImageField(upload_to='attendance_pictures/', blank=True, null=True)
+    total_wage = models.DecimalField(max_digits=10, decimal_places=2, default=00.00)
 
     def __str__(self):
         return f"Attendance for {self.employee} on {self.date}"
+    
+
+    def calculate_total_wage(self):
+        """
+        Calculate the deduction based on lateness.
+        """
+        if self.time_in and self.employee.time_in:
+            # Convert time fields to datetime for comparison
+            scheduled_time_in = datetime.combine(self.date, self.employee.time_in)
+            actual_time_in = datetime.combine(self.date, self.time_in)
+
+            # Calculate lateness
+            if actual_time_in > scheduled_time_in:
+                late_minutes = (actual_time_in - scheduled_time_in).total_seconds() / 60
+                late_hours = late_minutes // 60
+                deduction_rate = 57.00
+                deduction = float(late_hours) * float(deduction_rate)
+
+                self.total_wage = float(self.employee.daily_wage) - float(deduction)
+            else:
+                self.total_wage = self.employee.daily_wage
+        else:
+            self.total_wage = self.employee.daily_wage
+
+    def save(self, *args, **kwargs):
+        # Calculate deduction before saving
+        self.calculate_total_wage()
+        super().save(*args, **kwargs)
 
 class Payroll(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name="payrolls")

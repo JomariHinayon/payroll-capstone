@@ -2,3 +2,4 @@ from .auth import EmployeeLoginView, AccountRegistrationView, ObtainAuthTokenVie
 from .employee import EmployeeViewSet
 from .attendance import AttendanceViewSet
 from .payroll import PayrollViewSet
+from .announcement import AnnouncementViewSet

@@ -4,7 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from datetime import timedelta
 
 
-from .models import Account, Employee, Attendance, Payroll, Department, Position
+from .models import Account, Employee, Attendance, Payroll, Department, Position, Announcement
 
 
 class AccountAdmin(admin.ModelAdmin):
@@ -62,6 +62,17 @@ class DepartmentAdmin(admin.ModelAdmin):
 class PositionAdmin(admin.ModelAdmin):
     list_display = ('title', 'department', 'description')
 
+class AnnouncementAdmin(admin.ModelAdmin):
+    list_display = ('title', 'description', 'image_preview')
+    search_fields = ('title',)
+
+    def image_preview(self, obj):
+        if obj.announcement_image:
+            return format_html('<img src="{}" style="height: 75px;"/>', obj.announcement_image.url)
+        return "No Image"
+
+    image_preview.short_description = 'Preview'
+
 
 admin.site.register(Account, AccountAdmin)
 admin.site.register(Employee, EmployeeAdmin)
@@ -69,3 +80,4 @@ admin.site.register(Attendance, AttendanceAdmin)
 admin.site.register(Payroll, PayrollAdmin)
 admin.site.register(Department, DepartmentAdmin)
 admin.site.register(Position, PositionAdmin)
+admin.site.register(Announcement, AnnouncementAdmin)

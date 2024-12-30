@@ -2,9 +2,8 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from django.utils.dateparse import parse_time
+from django.utils.dateparse import parse_time, parse_date
 from rest_framework.decorators import action
-
 from core.models import Attendance, Employee
 from pms_api.serializer import AttendanceSerializer
 import json, base64, logging, hashlib
@@ -29,12 +28,27 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         json_data = json.loads(json_data_str)
 
         username = json_data.get('username')
-        date = json_data.get('date')
-        time_in = json_data.get('time_in')
-        time_out = json_data.get('time_out')
+        date_str = json_data.get('date')
+        time_in_str = json_data.get('time_in', None)
+        time_out_str = json_data.get('time_out', None)
+        picture = json_data.get('picture', None)
         employee_fingerprint = None
+        error_message = None
 
+        print(json_data)
         try:
+            # Convert `date` to `datetime.date`
+            date = parse_date(date_str)
+            if not date:
+                raise ValueError("Invalid date format. Expected YYYY-MM-DD.")
+            
+            if not picture:
+                raise ValueError("No attendance picture. Please take a pic.")
+
+            # Convert `time_in` and `time_out` to `datetime.time`
+            time_in = parse_time(time_in_str) if time_in_str else None
+            time_out = parse_time(time_out_str) if time_out_str else None
+            
             # Use `user__username` to look up the Employee based on the User model's username field
             employee = Employee.objects.get(user__username=username)
 
@@ -51,8 +65,8 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             attendance = Attendance.objects.create(
                 employee=employee,
                 date=date,
-                time_in=parse_time(time_in),
-                time_out=parse_time(time_out),
+                time_in=time_in,
+                time_out=time_out,
                 is_present=True,
                 fingerprint_file=employee_fingerprint  # Store the fingerprint file
             )
@@ -67,4 +81,5 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             return Response({"detail": error_message}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             logger.error(f"Exception during attendance creation: {str(e)}")
+            print(e)
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)

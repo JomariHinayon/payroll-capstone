@@ -4,7 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.authtoken.models import Token
 from django.shortcuts import get_object_or_404
 
-from core.models import Account, Employee, Attendance, Payroll, Department, Position
+from core.models import Account, Employee, Attendance, Payroll, Department, Position, Announcement
 
 
 class EmployeeLoginSerializer(serializers.ModelSerializer):
@@ -87,6 +87,11 @@ class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
         fields = ['name']
+
+class AnnouncementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Announcement
+        fields = ['id', 'title', 'description', 'announcement_image']
 
 class PositionSerializer(serializers.ModelSerializer):
     class Meta:
