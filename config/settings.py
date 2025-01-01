@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-#knf_$%mag5b&02d+-c*u)w2zi(d&eks48n*1gblqb49a5gkg-'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -175,3 +175,12 @@ SPECTACULAR_SETTINGS = {
 # Media files (uploads)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+SECURE_CROSS_ORIGIN_OPENER_POLICY = None
+
+CSRF_TRUSTED_ORIGINS = [
+'http://3.27.173.131',
+'https://3.27.173.131', 
+]
+
+CORS_ORIGIN_ALLOW_ALL = False
