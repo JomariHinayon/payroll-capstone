@@ -2,16 +2,15 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.http import HttpResponse, HttpResponseRedirect
 from datetime import timedelta
-
+from django.contrib.auth.admin import UserAdmin
 
 from .models import Account, Employee, Attendance, Payroll, Department, Position, Announcement
 
 
-class AccountAdmin(admin.ModelAdmin):
+class AccountAdmin(UserAdmin):
     list_display = ('username', 'email', 'mobile_number', 'contact_number', 'is_active', 'is_staff')
     search_fields = ('username', 'email', )
     list_filter = ('is_active', 'is_staff')
-
 
 class EmployeeAdmin(admin.ModelAdmin):
     list_display = ('id_number', 'user', 'gender', 'birth_date', 'hire_date', 'department', 'position', 'is_active', 'display_image', 'display_fingerprint', 'calculate_salary_button')
