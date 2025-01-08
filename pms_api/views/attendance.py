@@ -49,7 +49,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 raise ValueError("No attendance picture. Please take a pic.")
 
             # Save the uploaded picture
-            picture_path = default_storage.save(f"attendance_pictures/{username}_{date}.jpg", ContentFile(picture.read()))
+            picture_path = default_storage.save(f"attendance_pictures/{username}_time_in_{date}.jpg", ContentFile(picture.read()))
             logger.info(f"Picture saved at: {picture_path}")
 
             # Convert `time_in` and `time_out` to `datetime.time`
@@ -102,6 +102,9 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             json_data = json.loads(json_data_str)
             # Extract the username from the request data
             username = json_data.get('username')
+            picture_time_out = request.FILES.get('picture')
+            picture_path = default_storage.save(f"attendance_pictures/{username}_time_out_{date}.jpg", ContentFile(picture_time_out.read()))
+
             if not username:
                 return Response({"detail": "Username is required."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -121,6 +124,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             # Update the time_out field to the current time
             current_time = datetime.now().time()
             attendance.time_out = current_time
+            attendance.picture_time_out = picture_path
             attendance.save()
 
             # Serialize and return the updated attendance record

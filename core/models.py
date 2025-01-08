@@ -98,6 +98,7 @@ class Attendance(models.Model):
     is_present = models.BooleanField(default=True)
     fingerprint_file = models.FileField(upload_to='attendance_fingerprints/', blank=True, null=True)  # Store the fingerprint file
     picture = models.ImageField(upload_to='attendance_pictures/', blank=True, null=True)
+    picture_time_out = models.ImageField(upload_to='attendance_pictures/', blank=True, null=True)
     total_wage = models.DecimalField(max_digits=10, decimal_places=2, default=00.00)
 
     def __str__(self):

@@ -147,7 +147,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attendance
         fields = [
-            'id', 'username', 'employee', 'date', 'time_in', 'time_out', 'is_present', 'fingerprint_file', 'picture'
+            'id', 'username', 'employee', 'date', 'time_in', 'time_out', 'is_present', 'fingerprint_file', 'picture', 'picture_time_out'
         ]
         read_only_fields = ['id']
 
