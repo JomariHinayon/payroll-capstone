@@ -174,7 +174,7 @@ SPECTACULAR_SETTINGS = {
 
 # Media files (uploads)
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = MEDIA_ROOT = '/var/www/payroll/media'
 
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 
